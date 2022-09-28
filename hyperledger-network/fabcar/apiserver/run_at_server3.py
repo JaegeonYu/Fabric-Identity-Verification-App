@@ -1,22 +1,13 @@
 # -*- coding: utf-8 -*- 
-from flask import Flask, jsonify, request
-from flask_restx import Resource, Api, reqparse
-
-from tabnanny import verbose
 import cv2
 import numpy as np
 import sys
 from keras.models import load_model
 import warnings
 import os
-import joblib
 
-app=Flask(__name__)
-api = Api(app)
-app.config['DEBUG'] = True
-@app.route("/dd")
-def index():
-    return "dfsf"
+os.environ['TF_CPP_MIN_LOG_LEVEL']='3'
+warnings.filterwarnings(action='ignore')
 
 def preprocessing(img_name):
     img1 = cv2.imread('./images/'+img_name)
@@ -26,10 +17,10 @@ def preprocessing(img_name):
                    [0, -1, 0]])
     img1 = cv2.filter2D(img1, -1, kernel)
 
-    img1 = img1[1800:2300, 1300:1800] # 넘어 오는 사진 기준으로 재 측정 필요함
-    img1 = cv2.rotate(img1, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    #img1 = cv2.rotate(img1, cv2.ROTATE_90_CLOCKWISE)
-    img1 = img1[250:450, 100:300]
+    # img1 = img1[1800:2300, 1300:1800] # 넘어 오는 사진 기준으로 재 측정 필요함
+    # img1 = cv2.rotate(img1, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    # #img1 = cv2.rotate(img1, cv2.ROTATE_90_CLOCKWISE)
+    # img1 = img1[250:450, 100:300]
 
     return img1
 
@@ -73,13 +64,8 @@ def cutting(img, x,xx,y,yy):
     img = img[x:xx, y:yy]
     return img
 
-@app.route("/api/model/<image_name>")
-def get(image_name):
-
-    #model import
-    
-    #image_names = sys.argv[1] # 처리전 raw사진
-    image_names = image_name+".jpg" # 처리전 raw사진
+def main():
+    image_names = sys.argv[1] # 처리전 raw사진
     img = preprocessing(image_names)
 
     alpha = -0.2
@@ -92,7 +78,7 @@ def get(image_name):
     cv2.imwrite('./database/cvt_'+image_names, cvt_img)
     input_img1 = cv2.resize(img, (90,90)).reshape((1, 90, 90, 1)).astype(np.float32) / 255
 
-    image_names2  = image_name+"_block.jpg" # 처리된 사진
+    image_names2  = sys.argv[2] # 처리된 사진
     img2 = preprocessing(image_names2)
 
     alpha = -0.2
@@ -112,9 +98,9 @@ def get(image_name):
 
     
     best_model = load_model('model/0713.h5')
-    
+
     pred_rx = best_model.predict((input_data[0], input_data[1]))
-    
+
     if pred_rx > 0.5:
         res = 'yes'
 
@@ -122,10 +108,14 @@ def get(image_name):
         res = 'no'
 
     print(res, end='')
-    return jsonify({"result":res})
-
+    #sys.stdout.flush()
 
 if __name__ == "__main__":
-    app.run(host="localhost",port="808")
+	try:
+		main()
+	except:
+		raise
 
+    
 
+    

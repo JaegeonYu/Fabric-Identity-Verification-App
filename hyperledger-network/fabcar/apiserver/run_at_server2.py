@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*- 
+from tabnanny import verbose
 import cv2
 import numpy as np
 import sys
 from keras.models import load_model
 import warnings
 import os
+import joblib
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='3'
 warnings.filterwarnings(action='ignore')
@@ -75,7 +77,7 @@ def main():
     img = cvt_gray(img)
     img = img_fillter(img)
     cvt_img=cv2.resize(img, (90,90))
-    #cv2.imwrite('./database/cvt_'+image_names, cvt_img)
+    cv2.imwrite('./database/cvt_'+image_names, cvt_img)
     input_img1 = cv2.resize(img, (90,90)).reshape((1, 90, 90, 1)).astype(np.float32) / 255
 
     image_names2  = sys.argv[2] # 처리된 사진
@@ -88,7 +90,7 @@ def main():
     img2 = cvt_gray(img2)
     img2 = img_fillter(img2)
     cvt_img2=cv2.resize(img2, (90,90))
-    #cv2.imwrite('./database/cvt_'+image_names2, cvt_img2)
+    cv2.imwrite('./database/cvt_'+image_names2, cvt_img2)
     input_img2 = cv2.resize(img2, (90, 90)).reshape((1, 90, 90, 1)).astype(np.float32) / 255
 
     input_data = []
@@ -97,10 +99,11 @@ def main():
     input_data = np.array(input_data)
 
     
-    best_model = load_model('model/0713.h5')
-
-    pred_rx = best_model.predict((input_data[0], input_data[1]))
-
+    #best_model = load_model('model/0713.h5')
+    
+    #pred_rx = best_model.predict((input_data[0], input_data[1]))
+    best_model = joblib.load('./model/test_model.pkl')
+    pred_rx = best_model.predict((input_data[0],input_data[1]),verbose=0)
     if pred_rx > 0.5:
         res = 'yes'
 
