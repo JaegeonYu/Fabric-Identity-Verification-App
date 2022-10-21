@@ -1,22 +1,13 @@
 # -*- coding: utf-8 -*- 
 from flask import Flask, jsonify, request
-from flask_restx import Resource, Api, reqparse
 
-from tabnanny import verbose
 import cv2
 import numpy as np
-import sys
 from keras.models import load_model
-import warnings
-import os
-import joblib
+
 
 app=Flask(__name__)
-api = Api(app)
 app.config['DEBUG'] = True
-@app.route("/dd")
-def index():
-    return "dfsf"
 
 def preprocessing(img_name):
     img1 = cv2.imread('./images/'+img_name)
@@ -126,6 +117,6 @@ def get(image_name):
 
 
 if __name__ == "__main__":
-    app.run(host="localhost",port="808")
+    app.run(host="localhost",port="8081")
 
 

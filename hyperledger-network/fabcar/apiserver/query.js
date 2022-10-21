@@ -41,11 +41,9 @@ async function main() {
         const contract = network.getContract('fabinfo');
 
         // Evaluate the specified transaction.
-        // queryCar transaction - requires 1 argument, ex: ('queryCar', 'CAR4')
-        // queryAllCars transaction - requires no arguments, ex: ('queryAllCars')
-        //const result = await contract.evaluateTransaction('queryCar','CAR3');
-        const result = await contract.evaluateTransaction('queryFinger','zzzz1234');
-        //const result = await contract.evaluateTransaction('queryFinger','INFO2');
+        const result = await contract.evaluateTransaction('queryInfoSchool',"INFO0");
+        //const result = await contract.evaluateTransaction('queryFinger',"INFO1");
+        console.log("hello");
         console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
 
         // Disconnect from the gateway.

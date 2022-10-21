@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
         callback(null, './images/');
     },
     filename(req, file, callback) {
-        callback(null, `${file.originalname}`);
+        callback(null, `${file.originalname}.jpg`);
     },
 });
 
@@ -101,7 +101,7 @@ app.post('/api/upload', upload.single('photo'),async function (req, res) {
         fs.writeFileSync(`./images/${data.UserID}_block.jpg`, image1.image); 
        
         console.log('state : Images Compare to Use Python code');
-        var geturl = 'http://localhost:808/api/model/'+data.UserID;
+        var geturl = 'http://localhost:8081/api/model/'+data.UserID;
         var dataToSend=""
         request.get({
             url: geturl
@@ -187,6 +187,52 @@ app.get('/api/queryauth/:info_index', async function (req, res) {
     }
     
 });
+//school check function 
+app.get('/api/querySchoolAuth/:info_index', async function (req, res) {
+    try {
+        let start = new Date();
+        const ccpPath = path.resolve(__dirname, '..', '..', 'test-network', 'organizations', 'peerOrganizations', 'org1.example.com', 'connection-org1.json');
+        const ccp = JSON.parse(fs.readFileSync(ccpPath, 'utf8'));
+        // Create a new file system based wallet for managing identities.
+        const walletPath = path.join(process.cwd(), 'wallet');
+        const wallet = await Wallets.newFileSystemWallet(walletPath);
+        console.log(`Wallet path: ${walletPath}`);
+
+        // Check to see if we've already enrolled the user.
+        const identity = await wallet.get('appUser');
+        if (!identity) {
+            console.log('An identity for the user "appUser1" does not exist in the wallet');
+            console.log('Run the registerUser.js application before retrying');
+            return;
+        }
+        // Create a new gateway for connecting to our peer node.
+        const gateway = new Gateway();
+        await gateway.connect(ccp, { wallet, identity: 'appUser', discovery: { enabled: true, asLocalhost: true } });
+
+        // Get the network (channel) our contract is deployed to.
+        const network = await gateway.getNetwork('mychannel');
+
+        // Get the contract from the network.
+        const contract = network.getContract('fabinfo');
+        // Evaluate the specified transaction.
+        const result = await contract.evaluateTransaction('queryInfoSchool', req.params.info_index);
+        //clean(`./images/${req.params.info_index}.jpg`);
+        //clean(`./images/${req.params.info_index}_block.jpg`);
+        console.log(`state : Transaction has been evaluated, result is: ${result.toString()}`);
+        console.log(JSON.parse(result.toString()));
+        res.json(JSON.parse(result.toString()));
+        let finish = new Date();
+        console.log('state : QuaryAuth runtime : ',finish - start,'ms');
+       
+} catch (error) {
+    
+        console.error(`Failed to evaluate transaction: ${error}`);
+        res.status(500).json({error: error});
+        process.exit(1);
+        
+    }
+    
+});
 //sign up function
 app.post('/api/addinfo/', upload.single('photo'), async function (req, res) { 
     try {
@@ -240,4 +286,4 @@ async function clean(file){
 }
 
 
-app.listen(8080);
+app.listen(21234);
